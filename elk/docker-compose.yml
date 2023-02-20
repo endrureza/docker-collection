@@ -1,0 +1,75 @@
+version: "3.7"
+
+services:
+
+  elasticsearch:
+    build:
+      context: ./elasticsearch/
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+    restart: unless-stopped
+
+  logstash:
+    build:
+      context: ./logstash/
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/template:/usr/share/logstash/templates
+    ports:
+      - 5044:5044
+      - 9600:9600
+      - 8080:8080
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic
+    restart: unless-stopped
+
+  kibana:
+    build:
+      context: ./kibana/
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic
+    restart: unless-stopped
+  
+  filebeat:
+    build:
+      context: ./filebeat/
+    container_name: filebeat
+    ports:
+      - 5066:5066
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      - elasticsearch
+      - logstash
+      - kibana
+    networks:
+      - elastic
+    restart: unless-stopped
+
+networks:
+  elastic:
+    driver: bridge

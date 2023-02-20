@@ -1,0 +1,1 @@
+FROM elastic/logstash:8.6.2

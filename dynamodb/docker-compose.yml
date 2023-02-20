@@ -1,0 +1,32 @@
+# DynamoDB Local docker compose file
+version: '3'
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data/dynamodb
+    environment:
+      - DYNAMODB_SHARED_DB=true
+      - DYNAMODB_PORT=8000
+      - DYNAMODB_IN_MEMORY=true
+      - DYNAMODB_DB_PATH=/data/dynamodb
+    networks:
+      - dynamodb
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb:8000
+      - AWS_ACCESS_KEY_ID=foo
+      - AWS_SECRET_ACCESS_KEY=bar
+    networks:
+      - dynamodb
+
+networks:
+  dynamodb:
+    driver: bridge

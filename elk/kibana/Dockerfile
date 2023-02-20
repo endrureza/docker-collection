@@ -1,0 +1,1 @@
+FROM elastic/kibana:8.6.2

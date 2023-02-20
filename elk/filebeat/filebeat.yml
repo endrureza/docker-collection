@@ -1,0 +1,17 @@
+filebeat.inputs:
+  - type: http_endpoint
+    enabled: true
+    listen_address: 0.0.0.0
+    listen_port: 5066
+    response_code: 200
+    response_body: '{ "status": "OK", "message": "Event received" }'
+
+setup.kibana:
+  host: "kibana:5601"
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///host_docker/docker.sock"
